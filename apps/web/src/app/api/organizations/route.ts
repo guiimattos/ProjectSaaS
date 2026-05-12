@@ -1,26 +1,17 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
- codex/structure-saas-product-from-scratch-sd3uyc
-import { createOrganizationSchema } from "@/lib/validators";
-import { rateLimit } from "@/lib/security/rate-limit";
-
-
  codex/structure-saas-product-from-scratch-0nfrvt
 import { createOrganizationSchema } from "@/lib/validators";
 import { rateLimit } from "@/lib/security/rate-limit";
 
 main
 
- main
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
- codex/structure-saas-product-from-scratch-sd3uyc
-
 < codex/structure-saas-product-from-scratch-0nfrvt
-main
   const rl = rateLimit(`org-create:${session.user.email}`, 20, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
@@ -34,31 +25,23 @@ main
   const freePlan = await prisma.plan.findUnique({ where: { code: "free" } });
   if (!freePlan) return NextResponse.json({ error: "Missing free plan" }, { status: 500 });
 
-codex/structure-saas-product-from-scratch-sd3uyc
-
 
   const { name, slug } = await req.json();
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
 main
-main
   const org = await prisma.organization.create({
     data: {
       name,
       slug,
       ownerUserId: user.id,
- codex/structure-saas-product-from-scratch-sd3uyc
-      members: { create: { userId: user.id, role: "OWNER" } },
-      subscriptions: { create: { planId: freePlan.id, status: "ACTIVE" } }
-
  codex/structure-saas-product-from-scratch-0nfrvt
       members: { create: { userId: user.id, role: "OWNER" } },
       subscriptions: { create: { planId: freePlan.id, status: "ACTIVE" } }
 
       members: { create: { userId: user.id, role: "OWNER" } }
 main
- main
     }
   });
 
