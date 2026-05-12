@@ -1,7 +1,10 @@
 {
   "name": "taskflow-monorepo",
   "private": true,
+codex/structure-saas-product-from-scratch-sd3uyc
+
 codex/structure-saas-product-from-scratch-0nfrvt
+main
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -10,11 +13,14 @@ codex/structure-saas-product-from-scratch-0nfrvt
     "build": "npm run build -w @taskflow/web",
     "dev": "npm run dev -w @taskflow/web",
     "check:conflicts": "sh -c '! rg -n \"^(<<<<<<< .+|=======|>>>>>>> .+)\" --glob \"!node_modules/**\" --glob \"!.next/**\" .'"
+ codex/structure-saas-product-from-scratch-sd3uyc
+
 
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "build": "npm run build -w @taskflow/web",
     "dev": "npm run dev -w @taskflow/web"
+ main
  main
   }
 }

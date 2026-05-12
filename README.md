@@ -38,3 +38,11 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 - O foco inicial em Auth/Billing reduz retrabalho e risco de receita.
 - Cada fase acumula capacidades sem quebrar contratos anteriores.
 - A arquitetura foi desenhada para escalar por tenant com governança de dados.
+codex/structure-saas-product-from-scratch-sd3uyc
+
+## Jobs assíncronos (BullMQ)
+- Fila `integration-jobs` para tarefas externas (Notion/Slack).
+- Endpoint inicial: `POST /api/jobs/sync-notion` para enfileirar criação de tarefa no Notion.
+- Worker base em `src/lib/jobs/worker.ts` para processamento de integrações.
+
+ main
