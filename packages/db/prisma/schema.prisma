@@ -8,8 +8,11 @@ datasource db {
 }
 
 enum Role { OWNER ADMIN MEMBER }
-enum SubscriptionStatus { TRIALING ACTIVE PAST_DUE CANCELED }
+enum SubscriptionStatus { TRIALING ACTIVE PAST_DUE CANCELED
+codex/structure-saas-product-from-scratch-csp08h
+
 codex/structure-saas-product-from-scratch-3pxpnl
+main
 enum UsageMetric { TASKS_CREATED API_CALLS AUTOMATIONS_RUN STORAGE_BYTES TEAM_MEMBERS }
 
 model User {
@@ -26,6 +29,8 @@ model User {
   auditLogs          AuditLog[]           @relation("AuditActor")
   accounts           Account[]
   sessions           Session[]
+codex/structure-saas-product-from-scratch-csp08h
+
 
 
 enum UsageMetric { TASKS_CREATED API_CALLS AUTOMATIONS_RUN STORAGE_BYTES TEAM_MEMBERS }
@@ -43,6 +48,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
 main
+main
 }
 
 model Organization {
@@ -54,10 +60,14 @@ model Organization {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+ codex/structure-saas-product-from-scratch-csp08h
+  owner            User     @relation("OrganizationOwner", fields: [ownerUserId], references: [id])
+
 codex/structure-saas-product-from-scratch-3pxpnl
   owner            User     @relation("OrganizationOwner", fields: [ownerUserId], references: [id])
   owner            User     @relation(fields: [ownerUserId], references: [id])
 main
+ main
   members          OrganizationMember[]
   subscriptions    Subscription[]
   usageRecords     UsageRecord[]
@@ -65,12 +75,17 @@ main
 }
 
 model OrganizationMember {
+ codex/structure-saas-product-from-scratch-csp08h
+
 codex/structure-saas-product-from-scratch-3pxpnl
+main
   id             String   @id @default(cuid())
   organizationId String
   userId         String
   role           Role     @default(MEMBER)
   createdAt      DateTime @default(now())
+
+ codex/structure-saas-product-from-scratch-csp08h
 
   id             String @id @default(cuid())
   organizationId String
@@ -78,14 +93,19 @@ codex/structure-saas-product-from-scratch-3pxpnl
   role           Role   @default(MEMBER)
 main
 
+main
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId])
+ codex/structure-saas-product-from-scratch-csp08h
+  @@index([userId])
+
 codex/structure-saas-product-from-scratch-3pxpnl
   @@index([userId])
 
 main
+ main
 }
 
 model Plan {
@@ -108,7 +128,10 @@ model Subscription {
   stripeSubscriptionId String?            @unique
   stripeCustomerId     String?
   currentPeriodEnd     DateTime?
+ codex/structure-saas-product-from-scratch-csp08h
+
  codex/structure-saas-product-from-scratch-3pxpnl
+main
   cancelAtPeriodEnd    Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
@@ -117,10 +140,13 @@ model Subscription {
   plan                 Plan               @relation(fields: [planId], references: [id])
 
   @@index([organizationId, status])
+ codex/structure-saas-product-from-scratch-csp08h
+
 
   organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   plan                 Plan               @relation(fields: [planId], references: [id])
  main
+main
 }
 
 model UsageRecord {
@@ -130,18 +156,27 @@ model UsageRecord {
   periodStart    DateTime
   periodEnd      DateTime
   value          BigInt      @default(0)
+ codex/structure-saas-product-from-scratch-csp08h
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
 codex/structure-saas-product-from-scratch-3pxpnl
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
-=======
+
 main
+ main
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, metric, periodStart, periodEnd])
+ codex/structure-saas-product-from-scratch-csp08h
+  @@index([organizationId, metric])
+
  codex/structure-saas-product-from-scratch-3pxpnl
   @@index([organizationId, metric])
 
+main
 main
 }
 
@@ -156,11 +191,17 @@ model AuditLog {
   createdAt      DateTime    @default(now())
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+ codex/structure-saas-product-from-scratch-csp08h
+  actor          User?        @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+
 codex/structure-saas-product-from-scratch-3pxpnl
   actor          User?        @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, createdAt])
 
+ main
  main
 }
 

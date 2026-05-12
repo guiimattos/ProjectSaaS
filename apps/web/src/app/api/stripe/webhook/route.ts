@@ -56,7 +56,10 @@ export async function POST(req: Request) {
   const exists = await prisma.processedStripeEvent.findUnique({ where: { stripeEventId: event.id } });
   if (exists) return NextResponse.json({ received: true });
 
+codex/structure-saas-product-from-scratch-csp08h
+
 codex/structure-saas-product-from-scratch-3pxpnl
+main
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -76,6 +79,8 @@ codex/structure-saas-product-from-scratch-3pxpnl
     }
     default:
       break;
+ codex/structure-saas-product-from-scratch-csp08h
+
 
   if (event.type.startsWith("customer.subscription")) {
     const sub = event.data.object as Stripe.Subscription;
@@ -96,6 +101,7 @@ codex/structure-saas-product-from-scratch-3pxpnl
       });
     }
 main
+ main
   }
 
   await prisma.processedStripeEvent.create({
