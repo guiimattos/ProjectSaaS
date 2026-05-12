@@ -1,0 +1,9 @@
+{
+  "name": "taskflow-monorepo",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "build": "npm run build -w @taskflow/web",
+    "dev": "npm run dev -w @taskflow/web"
+  }
+}
