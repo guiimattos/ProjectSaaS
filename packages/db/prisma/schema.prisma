@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role { OWNER ADMIN MEMBER }
+enum SubscriptionStatus { TRIALING ACTIVE PAST_DUE CANCELED }
+enum UsageMetric { TASKS_CREATED API_CALLS AUTOMATIONS_RUN STORAGE_BYTES TEAM_MEMBERS }
+
+model User {
+  id                 String   @id @default(cuid())
+  name               String?
+  email              String   @unique
+  emailVerified      DateTime?
+  image              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  memberships        OrganizationMember[]
+  ownedOrganizations Organization[]       @relation("OrganizationOwner")
+  auditLogs          AuditLog[]           @relation("AuditActor")
+  accounts           Account[]
+  sessions           Session[]
+}
+
+model Organization {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  ownerUserId      String
+  stripeCustomerId String?  @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  owner            User     @relation("OrganizationOwner", fields: [ownerUserId], references: [id])
+  members          OrganizationMember[]
+  subscriptions    Subscription[]
+  usageRecords     UsageRecord[]
+  auditLogs        AuditLog[]
+}
+
+model OrganizationMember {
+  id             String   @id @default(cuid())
+  organizationId String
+  userId         String
+  role           Role     @default(MEMBER)
+  createdAt      DateTime @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+}
+
+model Plan {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  name                String
+  stripePriceId       String?  @unique
+  featuresJson        Json
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  subscriptions       Subscription[]
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  organizationId       String
+  planId               String
+  status               SubscriptionStatus
+  stripeSubscriptionId String?            @unique
+  stripeCustomerId     String?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                 Plan               @relation(fields: [planId], references: [id])
+
+  @@index([organizationId, status])
+}
+
+model UsageRecord {
+  id             String      @id @default(cuid())
+  organizationId String
+  metric         UsageMetric
+  periodStart    DateTime
+  periodEnd      DateTime
+  value          BigInt      @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, metric, periodStart, periodEnd])
+  @@index([organizationId, metric])
+}
+
+model AuditLog {
+  id             String      @id @default(cuid())
+  organizationId String
+  actorUserId    String?
+  action         String
+  resourceType   String
+  resourceId     String?
+  metadataJson   Json?
+  createdAt      DateTime    @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actor          User?        @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+}
+
+model ProcessedStripeEvent {
+  id            String   @id @default(cuid())
+  stripeEventId String   @unique
+  eventType     String
+  processedAt   DateTime @default(now())
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionToken])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+}
