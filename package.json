@@ -1,0 +1,13 @@
+{
+  "name": "taskflow-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @taskflow/web",
+    "dev": "npm run dev -w @taskflow/web",
+    "check:conflicts": "sh -c '! rg -n \"^(<<<<<<< .+|=======|>>>>>>> .+)\" --glob \"!node_modules/**\" --glob \"!.next/**\" .'"
+  }
+}
