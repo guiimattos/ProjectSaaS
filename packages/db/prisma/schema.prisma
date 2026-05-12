@@ -12,17 +12,19 @@ enum SubscriptionStatus { TRIALING ACTIVE PAST_DUE CANCELED }
 enum UsageMetric { TASKS_CREATED API_CALLS AUTOMATIONS_RUN STORAGE_BYTES TEAM_MEMBERS }
 
 model User {
-  id            String   @id @default(cuid())
-  name          String?
-  email         String   @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  name               String?
+  email              String   @unique
+  emailVerified      DateTime?
+  image              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  memberships   OrganizationMember[]
-  accounts      Account[]
-  sessions      Session[]
+  memberships        OrganizationMember[]
+  ownedOrganizations Organization[]       @relation("OrganizationOwner")
+  auditLogs          AuditLog[]           @relation("AuditActor")
+  accounts           Account[]
+  sessions           Session[]
 }
 
 model Organization {
@@ -34,7 +36,7 @@ model Organization {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  owner            User     @relation(fields: [ownerUserId], references: [id])
+  owner            User     @relation("OrganizationOwner", fields: [ownerUserId], references: [id])
   members          OrganizationMember[]
   subscriptions    Subscription[]
   usageRecords     UsageRecord[]
@@ -108,6 +110,7 @@ model AuditLog {
   createdAt      DateTime    @default(now())
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  actor          User?        @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 }
 
 model ProcessedStripeEvent {
