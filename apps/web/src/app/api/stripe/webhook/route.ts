@@ -56,6 +56,7 @@ export async function POST(req: Request) {
   const exists = await prisma.processedStripeEvent.findUnique({ where: { stripeEventId: event.id } });
   if (exists) return NextResponse.json({ received: true });
 
+codex/structure-saas-product-from-scratch-3pxpnl
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -75,6 +76,26 @@ export async function POST(req: Request) {
     }
     default:
       break;
+
+  if (event.type.startsWith("customer.subscription")) {
+    const sub = event.data.object as Stripe.Subscription;
+    const org = await prisma.organization.findFirst({ where: { stripeCustomerId: String(sub.customer) } });
+    if (org) {
+      await prisma.subscription.upsert({
+        where: { stripeSubscriptionId: sub.id },
+        create: {
+          organizationId: org.id,
+          planId: "REPLACE_PLAN_ID",
+          status: "ACTIVE",
+          stripeSubscriptionId: sub.id,
+          stripeCustomerId: String(sub.customer)
+        },
+        update: {
+          status: sub.status === "active" ? "ACTIVE" : "PAST_DUE"
+        }
+      });
+    }
+main
   }
 
   await prisma.processedStripeEvent.create({

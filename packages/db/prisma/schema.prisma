@@ -9,6 +9,7 @@ datasource db {
 
 enum Role { OWNER ADMIN MEMBER }
 enum SubscriptionStatus { TRIALING ACTIVE PAST_DUE CANCELED }
+codex/structure-saas-product-from-scratch-3pxpnl
 enum UsageMetric { TASKS_CREATED API_CALLS AUTOMATIONS_RUN STORAGE_BYTES TEAM_MEMBERS }
 
 model User {
@@ -25,6 +26,23 @@ model User {
   auditLogs          AuditLog[]           @relation("AuditActor")
   accounts           Account[]
   sessions           Session[]
+
+
+enum UsageMetric { TASKS_CREATED API_CALLS AUTOMATIONS_RUN STORAGE_BYTES TEAM_MEMBERS }
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  memberships   OrganizationMember[]
+  accounts      Account[]
+  sessions      Session[]
+main
 }
 
 model Organization {
@@ -36,7 +54,10 @@ model Organization {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+codex/structure-saas-product-from-scratch-3pxpnl
   owner            User     @relation("OrganizationOwner", fields: [ownerUserId], references: [id])
+  owner            User     @relation(fields: [ownerUserId], references: [id])
+main
   members          OrganizationMember[]
   subscriptions    Subscription[]
   usageRecords     UsageRecord[]
@@ -44,17 +65,27 @@ model Organization {
 }
 
 model OrganizationMember {
+codex/structure-saas-product-from-scratch-3pxpnl
   id             String   @id @default(cuid())
   organizationId String
   userId         String
   role           Role     @default(MEMBER)
   createdAt      DateTime @default(now())
 
+  id             String @id @default(cuid())
+  organizationId String
+  userId         String
+  role           Role   @default(MEMBER)
+main
+
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId])
+codex/structure-saas-product-from-scratch-3pxpnl
   @@index([userId])
+
+main
 }
 
 model Plan {
@@ -77,6 +108,7 @@ model Subscription {
   stripeSubscriptionId String?            @unique
   stripeCustomerId     String?
   currentPeriodEnd     DateTime?
+ codex/structure-saas-product-from-scratch-3pxpnl
   cancelAtPeriodEnd    Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
@@ -85,6 +117,10 @@ model Subscription {
   plan                 Plan               @relation(fields: [planId], references: [id])
 
   @@index([organizationId, status])
+
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                 Plan               @relation(fields: [planId], references: [id])
+ main
 }
 
 model UsageRecord {
@@ -94,13 +130,19 @@ model UsageRecord {
   periodStart    DateTime
   periodEnd      DateTime
   value          BigInt      @default(0)
+codex/structure-saas-product-from-scratch-3pxpnl
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+=======
+main
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, metric, periodStart, periodEnd])
+ codex/structure-saas-product-from-scratch-3pxpnl
   @@index([organizationId, metric])
+
+main
 }
 
 model AuditLog {
@@ -114,9 +156,12 @@ model AuditLog {
   createdAt      DateTime    @default(now())
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+codex/structure-saas-product-from-scratch-3pxpnl
   actor          User?        @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, createdAt])
+
+ main
 }
 
 model ProcessedStripeEvent {
