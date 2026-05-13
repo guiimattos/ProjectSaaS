@@ -18,7 +18,11 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 - Base para rate limiting e hardening
 
 ### Fase 3 — Launch (semanas 9-12)
+codex/structure-saas-product-from-scratch-xv9hhs
 - Observabilidade (Sentry + Posthog) com camada de abstração pronta
+
+- Observabilidade (Sentry + Posthog)
+ main
 - Segurança avançada (RLS, auditoria expandida, políticas de retenção)
 - Testes automatizados de fluxos críticos (auth/billing/webhook)
 - Refino de UX de billing e onboarding
@@ -32,16 +36,23 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 ## Status atual
 - ✅ MVP base pronto
 - ✅ Parte do Beta em andamento (entitlements/usage/webhook)
+codex/structure-saas-product-from-scratch-xv9hhs
 - ✅ Observabilidade base adicionada (track/captureError)
 - ✅ Script SQL inicial de RLS adicionado
 - ⏳ Próximo passo: plugar providers reais (Sentry/Posthog) e CI de testes
+=======
+- ⏳ Próximo passo: integrações + observabilidade + testes
+ main
 
 ## Como interpretar o roadmap
 - O foco inicial em Auth/Billing reduz retrabalho e risco de receita.
 - Cada fase acumula capacidades sem quebrar contratos anteriores.
 - A arquitetura foi desenhada para escalar por tenant com governança de dados.
+ codex/structure-saas-product-from-scratch-xv9hhs
 
 ## Jobs assíncronos (BullMQ)
 - Fila `integration-jobs` para tarefas externas (Notion/Slack).
 - Endpoint inicial: `POST /api/jobs/sync-notion` para enfileirar criação de tarefa no Notion.
 - Worker base em `src/lib/jobs/worker.ts` para processamento de integrações.
+=======
+main
