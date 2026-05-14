@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { billingPortalSchema } from "@/lib/validators";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { captureError, trackEvent } from "@/lib/observability";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -14,22 +15,34 @@ export async function POST(req: Request) {
 
   const parsed = billingPortalSchema.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+
   const { organizationId } = parsed.data;
 
-  const membership = await prisma.organizationMember.findFirst({
-    where: { organizationId, user: { email: session.user.email } },
-    include: { organization: true }
-  });
-  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const membership = await prisma.organizationMember.findFirst({
+      where: { organizationId, user: { email: session.user.email } },
+      include: { organization: true },
+    });
+    if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  if (!membership.organization.stripeCustomerId) {
-    return NextResponse.json({ error: "No customer" }, { status: 400 });
+    if (!membership.organization.stripeCustomerId) {
+      return NextResponse.json({ error: "No customer" }, { status: 400 });
+    }
+
+    const portal = await stripe.billingPortal.sessions.create({
+      customer: membership.organization.stripeCustomerId,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+    });
+
+    trackEvent({
+      name: "billing.portal.created",
+      organizationId,
+      properties: { customerId: membership.organization.stripeCustomerId },
+    });
+
+    return NextResponse.json({ url: portal.url });
+  } catch (error) {
+    captureError(error, { route: "POST /api/billing/portal", organizationId });
+    return NextResponse.json({ error: "Failed to open billing portal" }, { status: 500 });
   }
-
-  const portal = await stripe.billingPortal.sessions.create({
-    customer: membership.organization.stripeCustomerId,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`
-  });
-
-  return NextResponse.json({ url: portal.url });
 }

@@ -85,6 +85,7 @@ model Subscription {
   plan                 Plan               @relation(fields: [planId], references: [id])
 
   @@index([organizationId, status])
+  @@index([stripeCustomerId])
 }
 
 model UsageRecord {

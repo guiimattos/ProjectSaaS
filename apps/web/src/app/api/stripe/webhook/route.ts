@@ -10,6 +10,7 @@ function toStatus(status: Stripe.Subscription.Status) {
   if (status === "trialing") return "TRIALING";
   if (status === "active") return "ACTIVE";
   if (status === "past_due") return "PAST_DUE";
+  if (status === "canceled" || status === "unpaid" || status === "incomplete" || status === "incomplete_expired") return "CANCELED";
   return "CANCELED";
 }
 

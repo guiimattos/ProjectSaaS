@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { billingCheckoutSchema } from "@/lib/validators";
 import { rateLimit } from "@/lib/security/rate-limit";
+import { captureError, trackEvent } from "@/lib/observability";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -14,22 +15,34 @@ export async function POST(req: Request) {
 
   const parsed = billingCheckoutSchema.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+
   const { organizationId, priceId } = parsed.data;
 
-  const membership = await prisma.organizationMember.findFirst({
-    where: { organizationId, user: { email: session.user.email } },
-    include: { organization: true }
-  });
-  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  try {
+    const membership = await prisma.organizationMember.findFirst({
+      where: { organizationId, user: { email: session.user.email } },
+      include: { organization: true },
+    });
+    if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const checkout = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: membership.organization.stripeCustomerId ?? undefined,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?success=1`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=1`,
-    metadata: { organizationId }
-  });
+    const checkout = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer: membership.organization.stripeCustomerId ?? undefined,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?success=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=1`,
+      metadata: { organizationId },
+    });
 
-  return NextResponse.json({ url: checkout.url });
+    trackEvent({
+      name: "billing.checkout.created",
+      organizationId,
+      properties: { checkoutSessionId: checkout.id },
+    });
+
+    return NextResponse.json({ url: checkout.url });
+  } catch (error) {
+    captureError(error, { route: "POST /api/billing/checkout", organizationId });
+    return NextResponse.json({ error: "Failed to start checkout" }, { status: 500 });
+  }
 }

@@ -19,6 +19,8 @@
 - [~] Testes automatizados de fluxos críticos (suite estática inicial adicionada)
 
 ## Growth
+- [x] higiene de PR: check de conflict markers (`check:conflicts`)
+
 - [ ] SSO/SAML
 - [ ] IA e recomendações
 - [ ] expansão de integrações

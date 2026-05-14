@@ -49,3 +49,8 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 
 ## Checks automatizados
 - `npm run test:critical-flows`: valida presença dos controles críticos de Auth/Billing/Webhook nos endpoints principais.
+
+
+## Resolução de conflitos de PR
+- Rode `npm run check:conflicts` antes de abrir/atualizar PR.
+- Evite commits com arquivos de lock locais não solicitados.
