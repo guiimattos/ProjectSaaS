@@ -2,6 +2,11 @@ import { readFileSync } from 'node:fs';
 
 const checks = [
   {
+    file: 'apps/web/src/app/api/jobs/generate-summary/route.ts',
+    mustInclude: ['auth()', 'rateLimit(', 'openai.summary.generate'],
+    label: 'Job de IA exige auth, rate limit e enfileiramento correto',
+  },
+  {
     file: 'apps/web/src/app/api/stripe/webhook/route.ts',
     mustInclude: ['stripe.webhooks.constructEvent', 'processedStripeEvent.findUnique', 'processedStripeEvent.create'],
     label: 'Webhook Stripe tem validação de assinatura + idempotência',

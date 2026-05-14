@@ -70,3 +70,8 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 ## Observabilidade
 - `trackEvent` já envia para PostHog quando `POSTHOG_API_KEY` e `POSTHOG_HOST` estiverem configurados.
 - `captureError` mantém log local e prepara gancho para Sentry via `SENTRY_DSN`.
+
+
+## IA (Growth)
+- Novo endpoint: `POST /api/jobs/generate-summary` para enfileirar resumo com OpenAI.
+- Worker processa job `openai.summary.generate` e registra saída em log.

@@ -1,6 +1,7 @@
 import { createIntegrationWorker } from "@/lib/jobs/queue";
 import { createNotionTask } from "@/lib/integrations/notion";
 import { postSlackMessage } from "@/lib/integrations/slack";
+import { summarizeText } from "@/lib/integrations/openai";
 
 export const worker = createIntegrationWorker(async (name, data) => {
   if (name === "notion.task.create") {
@@ -13,4 +14,15 @@ export const worker = createIntegrationWorker(async (name, data) => {
     const text = String(data.text ?? "TaskFlow notification");
     if (channel) await postSlackMessage(channel, text);
   }
+
+  if (name === "openai.summary.generate") {
+    const text = String(data.text ?? "");
+    if (!text) return;
+
+    const summary = await summarizeText(text);
+    console.info("[ai-summary]", summary);
+  }
 });
+
+
+// Growth: AI summaries

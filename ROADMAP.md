@@ -22,5 +22,5 @@
 - [x] higiene de PR: check de conflict markers (`check:conflicts`)
 
 - [ ] SSO/SAML
-- [ ] IA e recomendações
+- [~] IA e recomendações (pipeline inicial com OpenAI summary job)
 - [ ] expansão de integrações
