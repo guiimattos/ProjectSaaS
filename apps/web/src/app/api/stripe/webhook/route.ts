@@ -10,6 +10,10 @@ function toStatus(status: Stripe.Subscription.Status) {
   if (status === "trialing") return "TRIALING";
   if (status === "active") return "ACTIVE";
   if (status === "past_due") return "PAST_DUE";
+ codex/structure-saas-product-from-scratch-asdxe6
+  if (status === "canceled" || status === "unpaid" || status === "incomplete" || status === "incomplete_expired") return "CANCELED";
+=======
+ main
   return "CANCELED";
 }
 
@@ -56,6 +60,8 @@ export async function POST(req: Request) {
   const exists = await prisma.processedStripeEvent.findUnique({ where: { stripeEventId: event.id } });
   if (exists) return NextResponse.json({ received: true });
 
+codex/structure-saas-product-from-scratch-asdxe6
+
  codex/structure-saas-product-from-scratch-xv9hhs
 
 codex/structure-saas-product-from-scratch-0nfrvt
@@ -65,6 +71,7 @@ codex/structure-saas-product-from-scratch-csp08h
 codex/structure-saas-product-from-scratch-3pxpnl
 main
 main
+ main
  main
   switch (event.type) {
     case "checkout.session.completed": {
@@ -85,6 +92,8 @@ main
     }
     default:
       break;
+ codex/structure-saas-product-from-scratch-asdxe6
+
  codex/structure-saas-product-from-scratch-xv9hhs
 
  codex/structure-saas-product-from-scratch-0nfrvt
@@ -111,6 +120,7 @@ main
       });
     }
 main
+ main
  main
  main
  main
