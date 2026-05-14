@@ -1,0 +1,14 @@
+{
+  "name": "taskflow-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @taskflow/web",
+    "dev": "npm run dev -w @taskflow/web",
+    "check:conflicts": "node scripts/validate-no-conflict-markers.mjs",
+    "test:critical-flows": "node scripts/test-critical-flows.mjs"
+  }
+}
