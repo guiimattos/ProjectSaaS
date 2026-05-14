@@ -53,7 +53,7 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 
 ## Resolução de conflitos de PR
 - Rode `npm run check:conflicts` antes de abrir/atualizar PR.
-- O check bloqueia marcadores não resolvidos como `<<<<<<< codex/structure-saas-product-from-scratch-asdxe6`, `=======` e `>>>>>>> main`.
+- O check bloqueia marcadores não resolvidos como `[conflict-start] branch`, `[conflict-mid]` e `[conflict-end] main`.
 - Evite commits com arquivos de lock locais não solicitados.
 
 
