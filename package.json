@@ -8,7 +8,7 @@
   "scripts": {
     "build": "npm run build -w @taskflow/web",
     "dev": "npm run dev -w @taskflow/web",
-    "check:conflicts": "sh -c '! rg -n \"^(<<<<<<< .+|=======|>>>>>>> .+)\" --glob \"!node_modules/**\" --glob \"!.next/**\" .'",
+    "check:conflicts": "node scripts/validate-no-conflict-markers.mjs",
     "test:critical-flows": "node scripts/test-critical-flows.mjs"
   }
 }
