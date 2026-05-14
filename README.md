@@ -65,3 +65,8 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 
 ## Segurança de dados (RLS)
 - Para aplicar políticas RLS no Postgres, rode: `npm run db:apply-rls` com `DATABASE_URL` configurada.
+
+
+## Observabilidade
+- `trackEvent` já envia para PostHog quando `POSTHOG_API_KEY` e `POSTHOG_HOST` estiverem configurados.
+- `captureError` mantém log local e prepara gancho para Sentry via `SENTRY_DSN`.

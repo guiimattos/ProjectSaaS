@@ -14,7 +14,7 @@
 - [x] Jobs com BullMQ (queue + worker base + endpoint de enqueue)
 
 ## Launch (12 semanas)
-- [~] Observabilidade completa (camada local pronta; providers reais pendentes)
+- [~] Observabilidade quase completa (PostHog HTTP pronto; Sentry SDK pendente)
 - [~] Hardening de segurança (rate limit + RLS SQL baseline + script de ativação)
 - [x] Testes automatizados de fluxos críticos (suite estática + CI GitHub Actions)
 
