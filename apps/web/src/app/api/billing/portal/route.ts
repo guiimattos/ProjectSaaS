@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+ codex/structure-saas-product-from-scratch-4sig3k
+import { billingPortalSchema } from "@/lib/validators";
+import { rateLimit } from "@/lib/security/rate-limit";
+import { captureError, trackEvent } from "@/lib/observability";
+=======
  codex/structure-saas-product-from-scratch-asdxe6
 import { billingPortalSchema } from "@/lib/validators";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -23,20 +28,27 @@ import { billingPortalSchema } from "@/lib/validators";
 import { rateLimit } from "@/lib/security/rate-limit";
 
  main
+ main
 
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+ codex/structure-saas-product-from-scratch-4sig3k
+=======
 codex/structure-saas-product-from-scratch-0nfrvt
  main
  main
+main
 
   const rl = rateLimit(`billing-portal:${session.user.email}`, 30, 60_000);
   if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const parsed = billingPortalSchema.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+ codex/structure-saas-product-from-scratch-4sig3k
+=======
  codex/structure-saas-product-from-scratch-asdxe6
+ main
 
   const { organizationId } = parsed.data;
 
@@ -67,6 +79,8 @@ codex/structure-saas-product-from-scratch-0nfrvt
     captureError(error, { route: "POST /api/billing/portal", organizationId });
     return NextResponse.json({ error: "Failed to open billing portal" }, { status: 500 });
   }
+ codex/structure-saas-product-from-scratch-4sig3k
+=======
 =======
   const { organizationId } = parsed.data;
 
@@ -98,5 +112,6 @@ main
   });
 
   return NextResponse.json({ url: portal.url });
+ main
  main
 }

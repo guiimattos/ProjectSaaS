@@ -1,6 +1,8 @@
 {
   "name": "taskflow-monorepo",
   "private": true,
+codex/structure-saas-product-from-scratch-4sig3k
+=======
  codex/structure-saas-product-from-scratch-asdxe6
 =======
  codex/structure-saas-product-from-scratch-xv9hhs
@@ -8,6 +10,7 @@
 codex/structure-saas-product-from-scratch-0nfrvt
 main
 main
+ main
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -15,6 +18,10 @@ main
   "scripts": {
     "build": "npm run build -w @taskflow/web",
     "dev": "npm run dev -w @taskflow/web",
+ codex/structure-saas-product-from-scratch-4sig3k
+    "check:conflicts": "node scripts/validate-no-conflict-markers.mjs",
+    "test:critical-flows": "node scripts/test-critical-flows.mjs"
+=======
  codex/structure-saas-product-from-scratch-asdxe6
     "check:conflicts": "node scripts/validate-no-conflict-markers.mjs",
     "test:critical-flows": "node scripts/test-critical-flows.mjs"
@@ -30,5 +37,6 @@ main
  main
  main
 main
+ main
   }
 }
