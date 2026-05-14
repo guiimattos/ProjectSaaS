@@ -18,7 +18,19 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 - Base para rate limiting e hardening
 
 ### Fase 3 — Launch (semanas 9-12)
+codex/structure-saas-product-from-scratch-4sig3k
 - Observabilidade (Sentry + Posthog) com camada de abstração pronta
+=======
+codex/structure-saas-product-from-scratch-asdxe6
+- Observabilidade (Sentry + Posthog) com camada de abstração pronta
+=======
+codex/structure-saas-product-from-scratch-xv9hhs
+- Observabilidade (Sentry + Posthog) com camada de abstração pronta
+
+- Observabilidade (Sentry + Posthog)
+ main
+ main
+ main
 - Segurança avançada (RLS, auditoria expandida, políticas de retenção)
 - Testes automatizados de fluxos críticos (auth/billing/webhook)
 - Refino de UX de billing e onboarding
@@ -32,19 +44,46 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 ## Status atual
 - ✅ MVP base pronto
 - ✅ Parte do Beta em andamento (entitlements/usage/webhook)
+ codex/structure-saas-product-from-scratch-4sig3k
 - ✅ Observabilidade base adicionada (track/captureError)
 - ✅ Script SQL inicial de RLS adicionado
 - ⏳ Próximo passo: plugar providers reais (Sentry/Posthog) e CI de testes
+=======
+ codex/structure-saas-product-from-scratch-asdxe6
+- ✅ Observabilidade base adicionada (track/captureError)
+- ✅ Script SQL inicial de RLS adicionado
+- ⏳ Próximo passo: plugar providers reais (Sentry/Posthog) e CI de testes
+=======
+codex/structure-saas-product-from-scratch-xv9hhs
+- ✅ Observabilidade base adicionada (track/captureError)
+- ✅ Script SQL inicial de RLS adicionado
+- ⏳ Próximo passo: plugar providers reais (Sentry/Posthog) e CI de testes
+=======
+- ⏳ Próximo passo: integrações + observabilidade + testes
+ main
+ main
+ main
 
 ## Como interpretar o roadmap
 - O foco inicial em Auth/Billing reduz retrabalho e risco de receita.
 - Cada fase acumula capacidades sem quebrar contratos anteriores.
 - A arquitetura foi desenhada para escalar por tenant com governança de dados.
+ codex/structure-saas-product-from-scratch-4sig3k
+=======
+ codex/structure-saas-product-from-scratch-asdxe6
+=======
+ codex/structure-saas-product-from-scratch-xv9hhs
+ main
+ main
 
 ## Jobs assíncronos (BullMQ)
 - Fila `integration-jobs` para tarefas externas (Notion/Slack).
 - Endpoint inicial: `POST /api/jobs/sync-notion` para enfileirar criação de tarefa no Notion.
 - Worker base em `src/lib/jobs/worker.ts` para processamento de integrações.
+codex/structure-saas-product-from-scratch-4sig3k
+=======
+ codex/structure-saas-product-from-scratch-asdxe6
+ main
 
 
 ## Checks automatizados
@@ -53,6 +92,7 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 
 ## Resolução de conflitos de PR
 - Rode `npm run check:conflicts` antes de abrir/atualizar PR.
+ codex/structure-saas-product-from-scratch-4sig3k
 - O check bloqueia marcadores não resolvidos como `[conflict-start] branch`, `[conflict-mid]` e `[conflict-end] main`.
 - Evite commits com arquivos de lock locais não solicitados.
 
@@ -61,3 +101,11 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 - Workflow em `.github/workflows/ci.yml` roda automaticamente:
   - `npm run check:conflicts`
   - `npm run test:critical-flows`
+=======
+- O check bloqueia marcadores não resolvidos como `<<<<<<< codex/structure-saas-product-from-scratch-asdxe6`, `=======` e `>>>>>>> main`.
+- Evite commits com arquivos de lock locais não solicitados.
+=======
+=======
+main
+ main
+ main
