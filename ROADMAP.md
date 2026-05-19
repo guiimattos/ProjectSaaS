@@ -23,4 +23,4 @@
 
 - [ ] SSO/SAML
 - [~] IA e recomendações (pipeline inicial com OpenAI summary job)
-- [ ] expansão de integrações
+- [~] expansão de integrações (GitHub issue job adicionado)

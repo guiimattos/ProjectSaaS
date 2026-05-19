@@ -2,6 +2,7 @@ import { createIntegrationWorker } from "@/lib/jobs/queue";
 import { createNotionTask } from "@/lib/integrations/notion";
 import { postSlackMessage } from "@/lib/integrations/slack";
 import { summarizeText } from "@/lib/integrations/openai";
+import { createGithubIssue } from "@/lib/integrations/github";
 
 export const worker = createIntegrationWorker(async (name, data) => {
   if (name === "notion.task.create") {
@@ -21,6 +22,18 @@ export const worker = createIntegrationWorker(async (name, data) => {
 
     const summary = await summarizeText(text);
     console.info("[ai-summary]", summary);
+  }
+
+  if (name === "github.issue.create") {
+    const owner = String(data.owner ?? "");
+    const repo = String(data.repo ?? "");
+    const title = String(data.title ?? "");
+    const body = String(data.body ?? "");
+
+    if (!owner || !repo || !title) return;
+
+    const issue = await createGithubIssue({ owner, repo, title, body });
+    console.info("[github-issue]", issue?.html_url ?? "created");
   }
 });
 

@@ -2,6 +2,11 @@ import { readFileSync } from 'node:fs';
 
 const checks = [
   {
+    file: 'apps/web/src/app/api/jobs/sync-github-issue/route.ts',
+    mustInclude: ['auth()', 'rateLimit(', 'github.issue.create'],
+    label: 'Job GitHub issue exige auth, rate limit e fila correta',
+  },
+  {
     file: 'apps/web/src/app/api/jobs/generate-summary/route.ts',
     mustInclude: ['auth()', 'rateLimit(', 'openai.summary.generate'],
     label: 'Job de IA exige auth, rate limit e enfileiramento correto',

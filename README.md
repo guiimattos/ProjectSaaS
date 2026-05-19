@@ -75,3 +75,8 @@ TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, 
 ## IA (Growth)
 - Novo endpoint: `POST /api/jobs/generate-summary` para enfileirar resumo com OpenAI.
 - Worker processa job `openai.summary.generate` e registra saída em log.
+
+
+## Integrações (Growth)
+- Novo endpoint: `POST /api/jobs/sync-github-issue` para enfileirar criação de issue no GitHub.
+- Worker processa job `github.issue.create` e registra URL da issue criada.
