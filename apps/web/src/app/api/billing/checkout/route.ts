@@ -7,7 +7,7 @@ import { json, parseBody, withHandler } from "@/lib/api/handler";
 export const POST = withHandler("POST /api/billing/checkout", async (req) => {
   const { organizationId, priceId } = await parseBody(req, billingCheckoutSchema);
   const { user, organization } = await requireMembership(organizationId, "ADMIN");
-  enforceRateLimit(`billing-checkout:${user.id}`, 30);
+  await enforceRateLimit(`billing-checkout:${user.id}`, 30);
 
   const customerId = await ensureStripeCustomer(organization, user.email);
 

@@ -6,6 +6,7 @@ import { badRequest } from "@/lib/api/errors";
 import { assertCanAddMember } from "@/lib/entitlements";
 import { writeAuditLog } from "@/lib/billing";
 import { trackEvent } from "@/lib/observability";
+import { invitationEmail, sendEmail } from "@/lib/email/send";
 
 type P = { organizationId: string };
 const INVITE_TTL_DAYS = 7;
@@ -22,8 +23,10 @@ export const GET = withHandler<P>("GET /api/organizations/:id/invitations", asyn
 
 export const POST = withHandler<P>("POST /api/organizations/:id/invitations", async (req, { params }) => {
   const { user, organization } = await requireMembership(params.organizationId, "ADMIN");
-  enforceRateLimit(`invite:${user.id}`, 30);
-  const { email, role } = await parseBody(req, createInvitationSchema);
+  await enforceRateLimit(`invite:${user.id}`, 30);
+  const parsedInvite = await parseBody(req, createInvitationSchema);
+  const email = parsedInvite.email;
+  const role = parsedInvite.role ?? "MEMBER";
   const normalizedEmail = email.toLowerCase();
 
   const alreadyMember = await prisma.organizationMember.findFirst({
@@ -52,7 +55,9 @@ export const POST = withHandler<P>("POST /api/organizations/:id/invitations", as
   await writeAuditLog({ organizationId: params.organizationId, actorUserId: user.id, action: "invitation.created", resourceType: "invitation", resourceId: invitation.id, metadataJson: { email: normalizedEmail, role } });
   trackEvent({ name: "invitation.created", organizationId: params.organizationId, userId: user.id });
 
-  // TODO: enviar e-mail. Por enquanto o link é retornado para o admin compartilhar.
   const acceptUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invitation.token}`;
-  return json({ invitation: { id: invitation.id, email: invitation.email, role: invitation.role, expiresAt: invitation.expiresAt, acceptUrl, organization: organization.name } }, { status: 201 });
+  const mail = invitationEmail({ organization: organization.name, inviter: user.name ?? user.email, role, acceptUrl });
+  const delivery = await sendEmail({ to: normalizedEmail, subject: mail.subject, html: mail.html, text: mail.text });
+
+  return json({ invitation: { id: invitation.id, email: invitation.email, role: invitation.role, expiresAt: invitation.expiresAt, acceptUrl, organization: organization.name, emailSent: !delivery.skipped && !("error" in delivery) } }, { status: 201 });
 });

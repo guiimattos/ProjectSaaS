@@ -33,6 +33,16 @@ const checks = [
     label: 'Convites exigem ADMIN e respeitam limite de membros',
   },
   {
+    file: 'apps/web/src/app/api/organizations/[organizationId]/integrations/route.ts',
+    mustInclude: ['requireMembership(params.organizationId, "ADMIN")', 'mask('],
+    label: 'Integrações exigem ADMIN e mascaram segredos na resposta',
+  },
+  {
+    file: 'apps/web/src/app/api/organizations/[organizationId]/route.ts',
+    mustInclude: ['requireMembership(params.organizationId, "OWNER")'],
+    label: 'Exclusão de organização exige OWNER',
+  },
+  {
     file: 'apps/web/src/middleware.ts',
     mustInclude: ['/dashboard/:path*', '/org/:path*'],
     label: 'Middleware protege rotas autenticadas',

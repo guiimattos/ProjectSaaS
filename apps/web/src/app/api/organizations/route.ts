@@ -16,7 +16,7 @@ export const GET = withHandler("GET /api/organizations", async () => {
 
 export const POST = withHandler("POST /api/organizations", async (req) => {
   const user = await requireUser();
-  enforceRateLimit(`org-create:${user.id}`, 20);
+  await enforceRateLimit(`org-create:${user.id}`, 20);
   const { name, slug } = await parseBody(req, createOrganizationSchema);
 
   const org = await createOrganization({ name, slug, ownerUserId: user.id });

@@ -6,6 +6,8 @@ import { assertCanCreateTask } from "@/lib/entitlements";
 import { trackEvent } from "@/lib/observability";
 import { badRequest, notFound } from "@/lib/api/errors";
 import { createTaskSchema, listTasksQuerySchema, updateTaskSchema } from "@/lib/validators";
+import { dispatchIntegrationEvent } from "@/lib/integrations/dispatch";
+import { notify } from "@/lib/notifications/service";
 
 export const taskInclude = {
   project: { select: { id: true, name: true, color: true } },
@@ -71,6 +73,7 @@ export async function createTask(organizationId: string, actorUserId: string, in
     writeAuditLog({ organizationId, actorUserId, action: "task.created", resourceType: "task", resourceId: task.id }),
   ]);
   trackEvent({ name: "task.created", organizationId, userId: actorUserId, properties: { taskId: task.id } });
+  await afterTaskEvent(organizationId, actorUserId, "task.created", task);
   return task;
 }
 
@@ -99,6 +102,8 @@ export async function updateTask(organizationId: string, actorUserId: string, ta
   });
 
   await writeAuditLog({ organizationId, actorUserId, action: "task.updated", resourceType: "task", resourceId: task.id, metadataJson: { changes: Object.keys(input) } });
+  if (becameDone) await afterTaskEvent(organizationId, actorUserId, "task.completed", task);
+  else if (input.assigneeId && input.assigneeId !== current.assigneeId) await afterTaskEvent(organizationId, actorUserId, "task.assigned", task);
   return task;
 }
 
@@ -106,4 +111,25 @@ export async function deleteTask(organizationId: string, actorUserId: string, ta
   await getTask(organizationId, taskId);
   await prisma.task.delete({ where: { id: taskId } });
   await writeAuditLog({ organizationId, actorUserId, action: "task.deleted", resourceType: "task", resourceId: taskId });
+}
+
+type TaskWithRelations = Prisma.TaskGetPayload<{ include: typeof taskInclude }>;
+
+/** Efeitos colaterais não-críticos: notificação in-app ao responsável e integrações externas. */
+async function afterTaskEvent(organizationId: string, actorUserId: string, event: "task.created" | "task.completed" | "task.assigned", task: TaskWithRelations) {
+  const [actor, org] = await Promise.all([
+    prisma.user.findUnique({ where: { id: actorUserId }, select: { name: true, email: true } }),
+    prisma.organization.findUnique({ where: { id: organizationId }, select: { slug: true } }),
+  ]);
+  const actorLabel = actor?.name ?? actor?.email ?? "Alguém";
+  const href = org ? `/org/${org.slug}/tasks?task=${task.id}` : undefined;
+
+  if (task.assigneeId && task.assigneeId !== actorUserId && event !== "task.completed") {
+    await notify({ organizationId, userId: task.assigneeId, type: event, title: `${actorLabel} atribuiu "${task.title}" a você`, href }).catch(() => undefined);
+  }
+  if (event === "task.completed" && task.createdById && task.createdById !== actorUserId) {
+    await notify({ organizationId, userId: task.createdById, type: event, title: `${actorLabel} concluiu "${task.title}"`, href }).catch(() => undefined);
+  }
+
+  await dispatchIntegrationEvent(organizationId, event, { title: task.title, actor: actorLabel, taskId: task.id });
 }

@@ -10,15 +10,23 @@ TaskFlow é um SaaS B2B multi-tenant de gestão de tarefas e projetos, construí
 - **Banco**: PostgreSQL (script de RLS em `packages/db/prisma/rls.sql`)
 
 ## Funcionalidades
-- Organizações com papéis `OWNER` / `ADMIN` / `MEMBER`
-- Projetos e tarefas (status, prioridade, responsável, prazo, filtros, paginação por cursor)
-- Convites de equipe por link com expiração e revogação
+- Organizações com papéis `OWNER` / `ADMIN` / `MEMBER`, onboarding e switcher de workspace
+- Projetos e tarefas (status, prioridade, responsável, prazo, comentários), quadro kanban com drag-and-drop e alternativa por teclado, lista com filtros
+- Convites por e-mail (Resend) ou link, com expiração e revogação
+- Notificações in-app; integrações Slack e Notion configuradas por organização e processadas em fila
 - Planos Free / Pro / Enterprise com limites aplicados no servidor (tarefas/mês, membros)
-- Auditoria (`AuditLog`) e métricas de uso (`UsageRecord`) por tenant
+- Auditoria (`AuditLog`), métricas de uso (`UsageRecord`) e overview com gráfico de fluxo
+- Observabilidade plugável (PostHog/Sentry), rate limit com Redis
+
+## Interface
+Design system em `apps/web/src/app/globals.css` (tokens light/dark, Plus Jakarta Sans, glassmorphism leve — gerado com a skill `ui-ux-pro-max`).
+Componentes animados de [ReactBits](https://reactbits.dev) em `apps/web/src/components/reactbits/` (código oficial, baixado do repositório `DavidHDev/react-bits`).
+
+Rotas: `/` landing · `/sign-in` · `/onboarding` · `/org/:slug` overview · `/board` · `/tasks` · `/projects` · `/members` · `/activity` · `/billing` · `/settings` · `/account` · `/invite/:token`
 
 ## Rodando localmente
 ```bash
-cp .env.example .env            # preencha DATABASE_URL, AUTH_SECRET, Google e Stripe
+cp .env.example .env            # preencha DATABASE_URL, AUTH_SECRET, Google e Stripe (Resend/Redis/PostHog/Sentry opcionais)
 npm install
 npm run db:generate
 npm run db:push                 # ou db:migrate para gerar migrations
@@ -38,7 +46,11 @@ Webhook Stripe em dev: `stripe listen --forward-to localhost:3000/api/stripe/web
 | `GET /api/organizations/:id/members`, `PATCH/DELETE .../members/:memberId` | Membros e papéis |
 | `GET/POST /api/organizations/:id/invitations`, `DELETE .../invitations/:invitationId` | Convites (ADMIN) |
 | `GET/POST /api/invitations/:token` | Ver / aceitar convite |
-| `GET /api/organizations/:id/usage` | Plano, limites e uso atual |
+| `GET /api/organizations/:id/usage` · `/stats` · `/activity` | Plano e uso · métricas do overview · auditoria paginada |
+| `GET/POST .../tasks/:taskId/comments`, `DELETE .../comments/:commentId` | Comentários |
+| `GET/PATCH/DELETE /api/organizations/:id` | Detalhes, edição e exclusão (OWNER) |
+| `GET/PUT/DELETE /api/organizations/:id/integrations` | Slack / Notion por tenant (ADMIN) |
+| `GET/PATCH /api/me`, `GET/POST /api/me/notifications`, `PATCH .../:id` | Perfil e notificações |
 | `POST /api/billing/checkout`, `POST /api/billing/portal` | Stripe (ADMIN) |
 | `POST /api/stripe/webhook` | Sincronização de assinaturas |
 

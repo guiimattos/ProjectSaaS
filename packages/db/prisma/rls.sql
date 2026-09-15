@@ -36,3 +36,14 @@ CREATE POLICY org_isolation_on_tasks ON "Task"
 
 CREATE POLICY org_isolation_on_invitations ON "Invitation"
   USING ("organizationId" = current_setting('app.current_organization_id', true));
+
+ALTER TABLE "Comment" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "OrganizationIntegration" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Notification" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY org_isolation_on_comments ON "Comment"
+  USING ("organizationId" = current_setting('app.current_organization_id', true));
+CREATE POLICY org_isolation_on_integrations ON "OrganizationIntegration"
+  USING ("organizationId" = current_setting('app.current_organization_id', true));
+CREATE POLICY org_isolation_on_notifications ON "Notification"
+  USING ("organizationId" = current_setting('app.current_organization_id', true));

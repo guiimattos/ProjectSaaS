@@ -64,6 +64,8 @@ model User {
   assignedTasks      Task[]               @relation("TaskAssignee")
   createdTasks       Task[]               @relation("TaskCreator")
   sentInvitations    Invitation[]         @relation("InvitationInviter")
+  comments           Comment[]
+  notifications      Notification[]
   accounts           Account[]
   sessions           Session[]
 }
@@ -85,6 +87,9 @@ model Organization {
   projects      Project[]
   tasks         Task[]
   invitations   Invitation[]
+  comments      Comment[]
+  integrations  OrganizationIntegration[]
+  notifications Notification[]
 }
 
 model OrganizationMember {
@@ -156,9 +161,63 @@ model Task {
   assignee     User?        @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   createdBy    User?        @relation("TaskCreator", fields: [createdById], references: [id], onDelete: SetNull)
 
+  comments     Comment[]
+
   @@index([organizationId, status])
   @@index([projectId])
   @@index([assigneeId])
+}
+
+model Comment {
+  id             String   @id @default(cuid())
+  organizationId String
+  taskId         String
+  authorId       String?
+  body           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author       User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([taskId, createdAt])
+}
+
+enum IntegrationProvider {
+  SLACK
+  NOTION
+}
+
+model OrganizationIntegration {
+  id             String              @id @default(cuid())
+  organizationId String
+  provider       IntegrationProvider
+  enabled        Boolean             @default(true)
+  configJson     Json
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, provider])
+}
+
+model Notification {
+  id             String    @id @default(cuid())
+  organizationId String
+  userId         String
+  type           String
+  title          String
+  body           String?
+  href           String?
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
 }
 
 model Plan {

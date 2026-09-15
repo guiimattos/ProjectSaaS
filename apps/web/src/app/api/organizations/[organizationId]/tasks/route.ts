@@ -15,7 +15,7 @@ export const GET = withHandler<P>("GET /api/organizations/:id/tasks", async (req
 
 export const POST = withHandler<P>("POST /api/organizations/:id/tasks", async (req, { params }) => {
   const { user } = await requireMembership(params.organizationId);
-  enforceRateLimit(`task-create:${user.id}`, 120);
+  await enforceRateLimit(`task-create:${user.id}`, 120);
   const input = await parseBody(req, createTaskSchema);
   const task = await createTask(params.organizationId, user.id, input);
   return json({ task }, { status: 201 });

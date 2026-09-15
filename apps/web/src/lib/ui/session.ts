@@ -13,6 +13,15 @@ export async function requirePageUser() {
   return user;
 }
 
+export async function listUserOrganizations(userId: string) {
+  const memberships = await prisma.organizationMember.findMany({
+    where: { userId },
+    include: { organization: { select: { id: true, name: true, slug: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  return memberships.map((m) => ({ ...m.organization, role: m.role as string }));
+}
+
 /** Carrega organização pelo slug garantindo que o usuário é membro. */
 export async function requirePageOrganization(slug: string, minRole?: Role) {
   const user = await requirePageUser();
@@ -22,5 +31,6 @@ export async function requirePageOrganization(slug: string, minRole?: Role) {
   });
   if (!membership) redirect("/dashboard");
   if (minRole === "ADMIN" && membership.role === "MEMBER") redirect(`/org/${slug}`);
+  if (minRole === "OWNER" && membership.role !== "OWNER") redirect(`/org/${slug}`);
   return { user, membership, organization: membership.organization };
 }

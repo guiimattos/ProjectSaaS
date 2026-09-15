@@ -1,30 +1,32 @@
 # Roadmap de execução
 
-## MVP
+## MVP ✅
 - [x] Base monorepo com Next.js App Router
 - [x] Auth com NextAuth v5 + Prisma Adapter (Google)
 - [x] Organizações multi-tenant com papéis (OWNER/ADMIN/MEMBER)
 - [x] Billing: checkout, portal, webhook idempotente e sincronização com Stripe
 - [x] Modelagem de dados principal
 
-## Beta
-- [x] Seed de planos
-- [x] Entitlements por plano (limite de tarefas/mês e membros)
-- [x] Domínio de produto: Projetos e Tarefas (CRUD, filtros, paginação por cursor)
-- [x] Convites de equipe por link (expiração, revogação, aceite)
-- [x] UI: dashboard, board de tarefas, membros, plano/uso
-- [x] Integrações iniciais Slack/Notion + jobs BullMQ
-- [ ] Envio de e-mail de convite (Resend/SES)
-- [ ] Comentários e anexos em tarefas
+## Beta ✅
+- [x] Seed de planos e entitlements aplicados no servidor (tarefas/mês, membros)
+- [x] Domínio de produto: Projetos, Tarefas, Comentários
+- [x] Convites por e-mail (Resend) com link, expiração e revogação
+- [x] Notificações in-app (atribuição, conclusão, comentários)
+- [x] Integrações por organização: Slack (webhook) e Notion (database), via fila BullMQ
+- [x] Interface completa: landing, onboarding, overview, quadro kanban, lista, projetos, membros, atividade, plano, configurações, conta
+- [x] Design system (ui-ux-pro-max) + componentes ReactBits (Aurora, BlurText, ShinyText, CountUp, SpotlightCard, GradientText, Magnet, FadeContent, AnimatedContent)
 
 ## Launch
-- [~] Observabilidade (camada local pronta; plugar Sentry/PostHog)
-- [~] Hardening de segurança (rate limit em memória → Redis; RLS SQL pronto, ativação pendente)
-- [~] Testes (checks estáticos + typecheck + build no CI; falta suíte de integração com banco)
-- [ ] Onboarding pós-login (criar primeira org automaticamente)
+- [x] Observabilidade: PostHog (eventos) e Sentry (erros) via HTTP quando as chaves existem
+- [x] Rate limit com Redis (fallback em memória)
+- [x] RLS SQL para todas as tabelas por tenant (ativação manual: `packages/db/prisma/rls.sql`)
+- [~] Testes: checks estáticos + typecheck + build no CI; falta suíte de integração com banco (Vitest + Testcontainers)
+- [ ] Busca global (⌘K)
+- [ ] Anexos em tarefas (Vercel Blob/S3)
+- [ ] Exportação de auditoria (CSV) — feature já gateada por plano
 
 ## Growth
 - [ ] SSO/SAML
-- [ ] IA: sugestões e automações
-- [ ] Expansão de integrações (Google Calendar, Linear)
+- [ ] IA: resumo de tarefas e sugestões de priorização
+- [ ] Integrações: Google Calendar, Linear, GitHub
 - [ ] Analytics avançado (feature já gateada por plano)

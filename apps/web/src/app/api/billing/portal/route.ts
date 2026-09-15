@@ -8,7 +8,7 @@ import { badRequest } from "@/lib/api/errors";
 export const POST = withHandler("POST /api/billing/portal", async (req) => {
   const { organizationId } = await parseBody(req, billingPortalSchema);
   const { user, organization } = await requireMembership(organizationId, "ADMIN");
-  enforceRateLimit(`billing-portal:${user.id}`, 30);
+  await enforceRateLimit(`billing-portal:${user.id}`, 30);
 
   if (!organization.stripeCustomerId) throw badRequest("Organização ainda não possui assinatura paga");
 

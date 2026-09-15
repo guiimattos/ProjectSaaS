@@ -60,3 +60,34 @@ export const createInvitationSchema = z.object({
 export const updateMemberSchema = z.object({
   role: z.enum(["ADMIN", "MEMBER"]),
 });
+
+export const createCommentSchema = z.object({
+  body: z.string().min(1).max(5000),
+});
+
+export const updateOrganizationSchema = z.object({
+  name: z.string().min(2).max(80).optional(),
+  slug: z.string().min(2).max(80).regex(/^[a-z0-9-]+$/, "Slug deve conter apenas letras minúsculas, números e hífens").optional(),
+});
+
+export const slackIntegrationSchema = z.object({
+  provider: z.literal("SLACK"),
+  enabled: z.boolean().default(true),
+  config: z.object({
+    webhookUrl: z.string().url().startsWith("https://hooks.slack.com/").optional().or(z.literal("")),
+    channel: z.string().max(80).optional(),
+    notifyOn: z.array(z.enum(["task.created", "task.completed", "task.assigned", "member.joined"])).default(["task.created", "task.completed"]),
+  }),
+});
+
+export const notionIntegrationSchema = z.object({
+  provider: z.literal("NOTION"),
+  enabled: z.boolean().default(true),
+  config: z.object({
+    apiKey: z.string().max(200).optional().or(z.literal("")),
+    databaseId: z.string().max(100).optional().or(z.literal("")),
+    syncTasks: z.boolean().default(true),
+  }),
+});
+
+export const upsertIntegrationSchema = z.discriminatedUnion("provider", [slackIntegrationSchema, notionIntegrationSchema]);

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { ApiError, notFound } from "@/lib/api/errors";
 import { writeAuditLog } from "@/lib/billing";
 import { trackEvent } from "@/lib/observability";
+import { dispatchIntegrationEvent } from "@/lib/integrations/dispatch";
 
 export async function getInvitationByToken(token: string) {
   const invitation = await prisma.invitation.findUnique({
@@ -34,5 +35,6 @@ export async function acceptInvitation(token: string, user: { id: string; email:
 
   await writeAuditLog({ organizationId: invitation.organizationId, actorUserId: user.id, action: "invitation.accepted", resourceType: "invitation", resourceId: invitation.id });
   trackEvent({ name: "invitation.accepted", organizationId: invitation.organizationId, userId: user.id });
+  await dispatchIntegrationEvent(invitation.organizationId, "member.joined", { actor: user.email });
   return invitation.organization;
 }

@@ -2,7 +2,7 @@ import { Role } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { forbidden, unauthorized, tooMany } from "@/lib/api/errors";
-import { rateLimit } from "@/lib/security/rate-limit";
+import { rateLimitAsync } from "@/lib/security/rate-limit";
 
 const ROLE_RANK: Record<Role, number> = { MEMBER: 0, ADMIN: 1, OWNER: 2 };
 
@@ -29,7 +29,7 @@ export async function requireMembership(organizationId: string, minRole: Role = 
   return { user, membership, organization: membership.organization };
 }
 
-export function enforceRateLimit(key: string, limit = 60, windowMs = 60_000) {
-  const rl = rateLimit(key, limit, windowMs);
+export async function enforceRateLimit(key: string, limit = 60, windowMs = 60_000) {
+  const rl = await rateLimitAsync(key, limit, windowMs);
   if (!rl.ok) throw tooMany();
 }
