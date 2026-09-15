@@ -1,61 +1,32 @@
 # Roadmap de execução
 
-## MVP (4 semanas)
+## MVP ✅
 - [x] Base monorepo com Next.js App Router
-- [x] Auth inicial com NextAuth + Prisma Adapter
-- [x] Organização multi-tenant básica
-- [x] Billing: checkout, portal, webhook e persistência
+- [x] Auth com NextAuth v5 + Prisma Adapter (Google)
+- [x] Organizações multi-tenant com papéis (OWNER/ADMIN/MEMBER)
+- [x] Billing: checkout, portal, webhook idempotente e sincronização com Stripe
 - [x] Modelagem de dados principal
 
-## Beta (8 semanas)
-- [x] Seed de planos para ambiente
-- [x] Camada de billing helper (usage/audit)
-codex/structure-saas-product-from-scratch-4sig3k
-=======
- codex/structure-saas-product-from-scratch-asdxe6
-=======
- codex/structure-saas-product-from-scratch-xv9hhs
- main
-main
-- [x] Integrações iniciais Slack/Notion (SDK via HTTP)
-- [x] Jobs com BullMQ (queue + worker base + endpoint de enqueue)
+## Beta ✅
+- [x] Seed de planos e entitlements aplicados no servidor (tarefas/mês, membros)
+- [x] Domínio de produto: Projetos, Tarefas, Comentários
+- [x] Convites por e-mail (Resend) com link, expiração e revogação
+- [x] Notificações in-app (atribuição, conclusão, comentários)
+- [x] Integrações por organização: Slack (webhook) e Notion (database), via fila BullMQ
+- [x] Interface completa: landing, onboarding, overview, quadro kanban, lista, projetos, membros, atividade, plano, configurações, conta
+- [x] Design system (ui-ux-pro-max) + componentes ReactBits (Aurora, BlurText, ShinyText, CountUp, SpotlightCard, GradientText, Magnet, FadeContent, AnimatedContent)
 
-## Launch (12 semanas)
-- [~] Observabilidade completa (camada local pronta; providers reais pendentes)
-- [~] Hardening de segurança (rate limit + RLS SQL baseline; ativação no banco pendente)
-codex/structure-saas-product-from-scratch-4sig3k
-- [x] Testes automatizados de fluxos críticos (suite estática + CI GitHub Actions)
-=======
- codex/structure-saas-product-from-scratch-asdxe6
-- [~] Testes automatizados de fluxos críticos (suite estática inicial adicionada)
- main
+## Launch
+- [x] Observabilidade: PostHog (eventos) e Sentry (erros) via HTTP quando as chaves existem
+- [x] Rate limit com Redis (fallback em memória)
+- [x] RLS SQL para todas as tabelas por tenant (ativação manual: `packages/db/prisma/rls.sql`)
+- [~] Testes: checks estáticos + typecheck + build no CI; falta suíte de integração com banco (Vitest + Testcontainers)
+- [ ] Busca global (⌘K)
+- [ ] Anexos em tarefas (Vercel Blob/S3)
+- [ ] Exportação de auditoria (CSV) — feature já gateada por plano
 
 ## Growth
-- [x] higiene de PR: check de conflict markers (`check:conflicts`)
-
-codex/structure-saas-product-from-scratch-4sig3k
-
-
-codex/structure-saas-product-from-scratch-0nfrvt
-- [x] Integrações iniciais Slack/Notion (SDK via HTTP)
-
-- [ ] Integrações Google/Slack/Notion
- main
-- [ ] Jobs com BullMQ
-
-## Launch (12 semanas)
-- [ ] Observabilidade completa (Sentry/Posthog)
-codex/structure-saas-product-from-scratch-0nfrvt
-- [~] Hardening de segurança (rate limit base pronto; RLS pendente)
-
-- [ ] Hardening de segurança (RLS no Postgres, rate limit)
- main
- main
-- [ ] Testes automatizados de fluxos críticos
-
-## Growth
- main
- main
 - [ ] SSO/SAML
-- [ ] IA e recomendações
-- [ ] expansão de integrações
+- [ ] IA: resumo de tarefas e sugestões de priorização
+- [ ] Integrações: Google Calendar, Linear, GitHub
+- [ ] Analytics avançado (feature já gateada por plano)

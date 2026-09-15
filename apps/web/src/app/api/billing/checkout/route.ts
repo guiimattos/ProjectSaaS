@@ -1,116 +1,27 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/stripe";
- codex/structure-saas-product-from-scratch-4sig3k
+import { ensureStripeCustomer, stripe } from "@/lib/stripe";
 import { billingCheckoutSchema } from "@/lib/validators";
-import { rateLimit } from "@/lib/security/rate-limit";
-import { captureError, trackEvent } from "@/lib/observability";
+import { trackEvent } from "@/lib/observability";
+import { enforceRateLimit, requireMembership } from "@/lib/api/auth";
+import { json, parseBody, withHandler } from "@/lib/api/handler";
 
- codex/structure-saas-product-from-scratch-asdxe6
-import { billingCheckoutSchema } from "@/lib/validators";
-import { rateLimit } from "@/lib/security/rate-limit";
-import { captureError, trackEvent } from "@/lib/observability";
+export const POST = withHandler("POST /api/billing/checkout", async (req) => {
+  const { organizationId, priceId } = await parseBody(req, billingCheckoutSchema);
+  const { user, organization } = await requireMembership(organizationId, "ADMIN");
+  await enforceRateLimit(`billing-checkout:${user.id}`, 30);
 
- codex/structure-saas-product-from-scratch-xv9hhs
-import { billingCheckoutSchema } from "@/lib/validators";
-import { rateLimit } from "@/lib/security/rate-limit";
-
- codex/structure-saas-product-from-scratch-0nfrvt
-import { billingCheckoutSchema } from "@/lib/validators";
-import { rateLimit } from "@/lib/security/rate-limit";
-=======
-main
- main
- main
- main
-
-export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
- codex/structure-saas-product-from-scratch-4sig3k
-
- codex/structure-saas-product-from-scratch-asdxe6
-=======
- codex/structure-saas-product-from-scratch-xv9hhs
-=======
- codex/structure-saas-product-from-scratch-0nfrvt
- main
-main
- main
-
-  const rl = rateLimit(`billing-checkout:${session.user.email}`, 30, 60_000);
-  if (!rl.ok) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-
-  const parsed = billingCheckoutSchema.safeParse(await req.json());
-  if (!parsed.success) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
- codex/structure-saas-product-from-scratch-4sig3k
-=======
- codex/structure-saas-product-from-scratch-asdxe6
- main
-
-  const { organizationId, priceId } = parsed.data;
-
-  try {
-    const membership = await prisma.organizationMember.findFirst({
-      where: { organizationId, user: { email: session.user.email } },
-      include: { organization: true },
-    });
-    if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-
-    const checkout = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: membership.organization.stripeCustomerId ?? undefined,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?success=1`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=1`,
-      metadata: { organizationId },
-    });
-
-    trackEvent({
-      name: "billing.checkout.created",
-      organizationId,
-      properties: { checkoutSessionId: checkout.id },
-    });
-
-    return NextResponse.json({ url: checkout.url });
-  } catch (error) {
-    captureError(error, { route: "POST /api/billing/checkout", organizationId });
-    return NextResponse.json({ error: "Failed to start checkout" }, { status: 500 });
-  }
- codex/structure-saas-product-from-scratch-4sig3k
-
-  const { organizationId, priceId } = parsed.data;
-
-  const membership = await prisma.organizationMember.findFirst({
-    where: { organizationId, user: { email: session.user.email } },
-    include: { organization: true }
-  });
-  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const customerId = await ensureStripeCustomer(organization, user.email);
 
   const checkout = await stripe.checkout.sessions.create({
     mode: "subscription",
-    customer: membership.organization.stripeCustomerId ?? undefined,
- codex/structure-saas-product-from-scratch-xv9hhs
-=======
-
-  const { organizationId, priceId } = await req.json();
-
-  const org = await prisma.organization.findUnique({ where: { id: organizationId } });
-  if (!org) return NextResponse.json({ error: "Organization not found" }, { status: 404 });
-
-  const checkout = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: org.stripeCustomerId ?? undefined,
- main
- main
+    customer: customerId,
+    client_reference_id: organizationId,
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?success=1`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=1`,
-    metadata: { organizationId }
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/org/${organization.slug}/billing?success=1`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/org/${organization.slug}/billing?canceled=1`,
+    metadata: { organizationId },
+    subscription_data: { metadata: { organizationId } },
   });
 
-  return NextResponse.json({ url: checkout.url });
- main
-main
-}
+  trackEvent({ name: "billing.checkout.created", organizationId, userId: user.id, properties: { checkoutSessionId: checkout.id } });
+  return json({ url: checkout.url });
+});
