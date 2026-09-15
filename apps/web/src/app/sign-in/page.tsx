@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
 import { auth, signIn } from "@/auth";
 import { Logo } from "@/components/ui/logo";
+import { DEV_USER, devLogin, devLoginEnabled } from "@/lib/dev-login";
 
 const AuroraBg = dynamic(() => import("@/components/landing/aurora-bg"), { ssr: false });
 
@@ -27,6 +28,12 @@ export default async function SignInPage({ searchParams }: { searchParams: { cal
             Continuar com Google
           </button>
         </form>
+        {devLoginEnabled() && (
+          <form action={devLogin} className="stack-sm" style={{ borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-4)" }}>
+            <button type="submit" className="btn btn-block">Entrar como usuário de teste</button>
+            <p className="subtle text-xs" style={{ textAlign: "center" }}>Somente em desenvolvimento · {DEV_USER.email}</p>
+          </form>
+        )}
         <p className="subtle text-xs" style={{ textAlign: "center" }}>Ao continuar você concorda com os termos de uso e a política de privacidade.</p>
       </div>
     </main>
