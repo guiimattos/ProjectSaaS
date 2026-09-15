@@ -1,111 +1,54 @@
 # TaskFlow SaaS
 
-TaskFlow é uma base SaaS multi-tenant com foco em **Auth + Billing primeiro**, preparada para evoluir para produto B2B em produção.
+TaskFlow é um SaaS B2B multi-tenant de gestão de tarefas e projetos, construído com foco em **Auth + Billing primeiro**.
 
-## Roadmap do Projeto
+## Stack
+- **Monorepo** npm workspaces: `apps/web` (Next.js 14 App Router), `packages/db` (Prisma), `packages/shared` (matriz de planos)
+- **Auth**: NextAuth v5 + Prisma Adapter (Google OAuth)
+- **Billing**: Stripe Checkout, Customer Portal e webhook idempotente
+- **Jobs**: BullMQ + Redis para integrações (Slack/Notion)
+- **Banco**: PostgreSQL (script de RLS em `packages/db/prisma/rls.sql`)
 
-### Fase 1 — MVP (semanas 1-4)
-- Estrutura monorepo com app Next.js 14
-- Autenticação com NextAuth + Prisma
-- Organizações multi-tenant
-- Billing Stripe (checkout, portal, webhook)
-- Schema Prisma inicial (usuário, organização, assinatura, uso, auditoria)
+## Funcionalidades
+- Organizações com papéis `OWNER` / `ADMIN` / `MEMBER`
+- Projetos e tarefas (status, prioridade, responsável, prazo, filtros, paginação por cursor)
+- Convites de equipe por link com expiração e revogação
+- Planos Free / Pro / Enterprise com limites aplicados no servidor (tarefas/mês, membros)
+- Auditoria (`AuditLog`) e métricas de uso (`UsageRecord`) por tenant
 
-### Fase 2 — Beta (semanas 5-8)
-- Entitlements por plano + limites de uso
-- Integrações públicas iniciais (Google, Slack, Notion)
-- Melhorias no webhook (idempotência + sincronização determinística)
-- Base para rate limiting e hardening
+## Rodando localmente
+```bash
+cp .env.example .env            # preencha DATABASE_URL, AUTH_SECRET, Google e Stripe
+npm install
+npm run db:generate
+npm run db:push                 # ou db:migrate para gerar migrations
+npm run db:seed                 # cria planos free/pro/enterprise
+npm run dev                     # http://localhost:3000
+npm run worker                  # (opcional) worker BullMQ, requer Redis
+```
 
-### Fase 3 — Launch (semanas 9-12)
-codex/structure-saas-product-from-scratch-4sig3k
-- Observabilidade (Sentry + Posthog) com camada de abstração pronta
-=======
-codex/structure-saas-product-from-scratch-asdxe6
-- Observabilidade (Sentry + Posthog) com camada de abstração pronta
-=======
-codex/structure-saas-product-from-scratch-xv9hhs
-- Observabilidade (Sentry + Posthog) com camada de abstração pronta
+Webhook Stripe em dev: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
 
-- Observabilidade (Sentry + Posthog)
- main
- main
- main
-- Segurança avançada (RLS, auditoria expandida, políticas de retenção)
-- Testes automatizados de fluxos críticos (auth/billing/webhook)
-- Refino de UX de billing e onboarding
+## Estrutura da API
+| Rota | Descrição |
+| --- | --- |
+| `GET/POST /api/organizations` | Listar / criar organizações |
+| `GET/POST /api/organizations/:id/projects`, `GET/PATCH/DELETE .../projects/:projectId` | Projetos |
+| `GET/POST /api/organizations/:id/tasks`, `GET/PATCH/DELETE .../tasks/:taskId` | Tarefas (`?status=&projectId=&assigneeId=&q=&cursor=`) |
+| `GET /api/organizations/:id/members`, `PATCH/DELETE .../members/:memberId` | Membros e papéis |
+| `GET/POST /api/organizations/:id/invitations`, `DELETE .../invitations/:invitationId` | Convites (ADMIN) |
+| `GET/POST /api/invitations/:token` | Ver / aceitar convite |
+| `GET /api/organizations/:id/usage` | Plano, limites e uso atual |
+| `POST /api/billing/checkout`, `POST /api/billing/portal` | Stripe (ADMIN) |
+| `POST /api/stripe/webhook` | Sincronização de assinaturas |
 
-### Fase 4 — Growth
-- SSO/SAML
-- Features de IA e automações
-- Expansão de integrações
-- Otimização de custos e performance
+Convenções em `apps/web/src/lib/api`: `withHandler` (tratamento de erros), `requireUser` / `requireMembership(orgId, minRole)` (auth + tenant), `parseBody` (zod).
 
-## Status atual
-- ✅ MVP base pronto
-- ✅ Parte do Beta em andamento (entitlements/usage/webhook)
- codex/structure-saas-product-from-scratch-4sig3k
-- ✅ Observabilidade base adicionada (track/captureError)
-- ✅ Script SQL inicial de RLS adicionado
-- ⏳ Próximo passo: plugar providers reais (Sentry/Posthog) e CI de testes
-=======
- codex/structure-saas-product-from-scratch-asdxe6
-- ✅ Observabilidade base adicionada (track/captureError)
-- ✅ Script SQL inicial de RLS adicionado
-- ⏳ Próximo passo: plugar providers reais (Sentry/Posthog) e CI de testes
-=======
-codex/structure-saas-product-from-scratch-xv9hhs
-- ✅ Observabilidade base adicionada (track/captureError)
-- ✅ Script SQL inicial de RLS adicionado
-- ⏳ Próximo passo: plugar providers reais (Sentry/Posthog) e CI de testes
-=======
-- ⏳ Próximo passo: integrações + observabilidade + testes
- main
- main
- main
-
-## Como interpretar o roadmap
-- O foco inicial em Auth/Billing reduz retrabalho e risco de receita.
-- Cada fase acumula capacidades sem quebrar contratos anteriores.
-- A arquitetura foi desenhada para escalar por tenant com governança de dados.
- codex/structure-saas-product-from-scratch-4sig3k
-=======
- codex/structure-saas-product-from-scratch-asdxe6
-=======
- codex/structure-saas-product-from-scratch-xv9hhs
- main
- main
-
-## Jobs assíncronos (BullMQ)
-- Fila `integration-jobs` para tarefas externas (Notion/Slack).
-- Endpoint inicial: `POST /api/jobs/sync-notion` para enfileirar criação de tarefa no Notion.
-- Worker base em `src/lib/jobs/worker.ts` para processamento de integrações.
-codex/structure-saas-product-from-scratch-4sig3k
-=======
- codex/structure-saas-product-from-scratch-asdxe6
- main
-
-
-## Checks automatizados
-- `npm run test:critical-flows`: valida presença dos controles críticos de Auth/Billing/Webhook nos endpoints principais.
-
-
-## Resolução de conflitos de PR
-- Rode `npm run check:conflicts` antes de abrir/atualizar PR.
- codex/structure-saas-product-from-scratch-4sig3k
-- O check bloqueia marcadores não resolvidos como `[conflict-start] branch`, `[conflict-mid]` e `[conflict-end] main`.
-- Evite commits com arquivos de lock locais não solicitados.
-
-
-## CI (GitHub Actions)
-- Workflow em `.github/workflows/ci.yml` roda automaticamente:
-  - `npm run check:conflicts`
-  - `npm run test:critical-flows`
-=======
-- O check bloqueia marcadores não resolvidos como `<<<<<<< codex/structure-saas-product-from-scratch-asdxe6`, `=======` e `>>>>>>> main`.
-- Evite commits com arquivos de lock locais não solicitados.
-=======
-=======
-main
- main
- main
+## Checks
+```bash
+npm run check:conflicts       # bloqueia marcadores/restos de conflito
+npm run test:critical-flows   # garante controles críticos de auth/billing/limites
+npm run typecheck
+npm run build
+```
+O CI (`.github/workflows/ci.yml`) roda todos os checks acima.
